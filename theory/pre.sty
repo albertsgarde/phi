@@ -1,0 +1,61 @@
+% Todos
+\usepackage[disable]{todonotes}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{acronym}
+
+%% Standard symbols
+\newcommand{\e}{\mathrm{e}}
+\newcommand{\im}{\mathrm{i}}
+\newcommand{\diff}{\mathrm{d}}
+\newcommand{\id}{\mathrm{id}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\M}{\mathbb{M}}
+\newcommand{\xor}{\oplus}
+
+
+%\newmdtheoremenv[nobreak=true]{theorem}{Theorem}
+%\newmdtheoremenv[nobreak=true]{lemma}{Lemma}
+%\newmdtheoremenv[nobreak=true]{corollary}{Corollary}
+%\newmdtheoremenv[nobreak=true]{definition}{Definition}
+%\newmdtheoremenv[nobreak=true]{problem}{Problem}
+%\newmdtheoremenv{example}{Example}
+
+% Symbol formatting
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\newcommand{\mat}[1]{\mathbf{#1}}
+\newcommand{\set}[1]{\mathcal{#1}}
+
+% Absolute
+\newcommand{\abs}[1]{\left\lvert#1\right\lvert}
+
+% Norm
+\newcommand{\norm}[1]{\left\lvert\left\lvert#1\right\lvert\right\lvert}
+% Transpose
+\newcommand{\trans}[1]{#1^\top}
+
+% Label specific row in align
+\newcommand\numberthis[1]{\stepcounter{equation}\label{#1}\tag{\theequation}}
+
+% Matrix trace
+\newcommand{\trace}{\mathrm{tr}}
+
+% Map image
+\DeclareMathOperator{\ima}{im}
+
+% Kronecker product	
+\newcommand{\kronprod}{\otimes}
+
+% Direct sum
+\newcommand{\dirsum}{\oplus}
+
+% Element-wise product
+\newcommand{\elemprod}{\circ}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
