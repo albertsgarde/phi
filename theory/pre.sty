@@ -2,8 +2,13 @@
 \usepackage[disable]{todonotes}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{amsthm}
 \usepackage{enumitem}
 \usepackage{acronym}
+
+\usepackage{tcolorbox}
+\tcbuselibrary{theorems}
+
 
 %% Standard symbols
 \newcommand{\e}{\mathrm{e}}
@@ -19,12 +24,26 @@
 \newcommand{\xor}{\oplus}
 
 
-%\newmdtheoremenv[nobreak=true]{theorem}{Theorem}
-%\newmdtheoremenv[nobreak=true]{lemma}{Lemma}
-%\newmdtheoremenv[nobreak=true]{corollary}{Corollary}
-%\newmdtheoremenv[nobreak=true]{definition}{Definition}
-%\newmdtheoremenv[nobreak=true]{problem}{Problem}
-%\newmdtheoremenv{example}{Example}
+
+\newtcbtheorem{theorem}{Theorem}%
+{colframe=black,fonttitle=\bfseries,
+separator sign={\ -}}{theorem}
+\newtcbtheorem[use counter from=theorem]{lemma}{Lemma}%
+{colframe=black,fonttitle=\bfseries,
+separator sign={\ -}}{lemma}
+\newtcbtheorem[use counter from=theorem]{corollary}{Corollary}%
+{colframe=black,fonttitle=\bfseries,
+separator sign={\ -}}{corollary}
+\newtcbtheorem[use counter from=theorem]{definition}{Definition}%
+{colframe=black,fonttitle=\bfseries,
+separator sign={\ -}}{definition}
+\newtcbtheorem[use counter from=theorem]{example}{Example}%
+{colframe=black,fonttitle=\bfseries,
+separator sign={\ -}}{example}
+\newtcbtheorem[use counter from=theorem]{problem}{Problem}%
+{colframe=black,fonttitle=\bfseries,
+separator sign={\ -}}{problem}
+
 
 % Symbol formatting
 \renewcommand{\vec}[1]{\mathbf{#1}}
@@ -34,8 +53,6 @@
 % Absolute
 \newcommand{\abs}[1]{\left\lvert#1\right\lvert}
 
-% Norm
-\newcommand{\norm}[1]{\left\lvert\left\lvert#1\right\lvert\right\lvert}
 % Transpose
 \newcommand{\trans}[1]{#1^\top}
 
@@ -59,3 +76,25 @@
 
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
+
+% References a Theorem/Lemma/Corollary depending on the label (thr/lemma/cor).
+% For example, if a label thr:hairy_ball exists, then \thref{hairy_ball} will evaluate to "Theorem \label{thr:hairy_ball}".
+% If the theorem is later changed to a lemma, so thr:hairy_ball is renamed lemma:hairy_ball, \thref{hairy_ball} will instead evaluate to "\Lemma \label{lemma:hairy_ball}".
+% What happens if two labels with the same name (both thr:hairy_ball and lemma:hairy_ball) is undefined.
+\makeatletter
+\newcommand\thref[1]{%
+	\@ifundefined{r@theorem:#1}{%
+		\@ifundefined{r@lemma:#1}{%
+			\@ifundefined{r@corollary:#1}{%
+				Definition \ref {definition:#1}%
+			}{%
+				Corollary \ref{corollary:#1}%
+			}%
+		}{%
+			Lemma \ref{lemma:#1}%
+		}%
+	}{%
+		Theorem \ref{theorem:#1}%
+	}%
+}
+\makeatother
