@@ -3,10 +3,7 @@ use std::{
     ops::{Add, AddAssign, Index, IndexMut},
 };
 
-use crate::{
-    rule::{self, Rule},
-    Value,
-};
+use crate::{rule::Rule, Value};
 
 #[derive(Clone, Debug)]
 pub struct Tape {
@@ -101,7 +98,6 @@ impl Tape {
             return false;
         }
         assert!(cur - min < rule_len);
-        println!("helleflynder: {cur} {min}");
         true
     }
 
