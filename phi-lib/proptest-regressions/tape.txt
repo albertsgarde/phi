@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 44bc988c39df5a545d61a36cac66e8a67fdf410b6fac88ef789cdf50fb8c5d1f # shrinks to tape_negatives = [0], tape_positives = [8, 8, 5, 0, 0], rule_values = [2], index = 2
+cc ab60367cbd04d3dd5d968a27ec543c38dd1dfd6034718952339b279704d8ecde # shrinks to tape_negatives = [2], tape_positives = [5], rule_values = [2], index = 0

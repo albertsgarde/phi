@@ -3,7 +3,18 @@ use std::{
     ops::{Add, AddAssign, Index, IndexMut},
 };
 
+use thiserror::Error;
+
 use crate::{rule::Rule, Value};
+
+#[derive(Clone, Debug, Error)]
+#[error("Rule application at index {application_index} failed at rule index {rule_index} because rule value {rule_value} is greater than tape value {tape_value}.")]
+pub struct ApplyRuleError {
+    application_index: isize,
+    rule_index: usize,
+    rule_value: Value,
+    tape_value: Value,
+}
 
 #[derive(Clone, Debug)]
 pub struct Tape {
@@ -58,16 +69,36 @@ impl Tape {
         (min..max).rev()
     }
 
-    pub fn apply(mut self, rule: &Rule, index: isize) -> Self {
+    pub fn value(&self, rule: &Rule) -> f64 {
+        self.iter()
+            .zip(self.index_iter())
+            .map(|(value, index)| {
+                f64::from(value) * rule.base().powi(i32::try_from(index).unwrap())
+            })
+            .sum::<f64>()
+    }
+
+    pub fn apply(&self, rule: &Rule, index: isize) -> Result<Self, ApplyRuleError> {
+        self.clone().apply_in_place(rule, index)
+    }
+
+    pub fn apply_in_place(mut self, rule: &Rule, index: isize) -> Result<Self, ApplyRuleError> {
         let rule_len = rule.len() as isize;
         assert!(rule_len > 0);
         self[index] += 1;
         for (rule_index, rule_value) in rule.iter().enumerate() {
-            let tape_index = index - isize::try_from(rule_index).unwrap();
-            assert!(self[tape_index] >= rule_value);
+            let tape_index = index - isize::try_from(rule_index + 1).unwrap();
+            if self[tape_index] < rule_value {
+                return Err(ApplyRuleError {
+                    application_index: index,
+                    rule_index,
+                    rule_value,
+                    tape_value: self[tape_index],
+                });
+            }
             self[tape_index] -= rule_value;
         }
-        self
+        Ok(self)
     }
 
     pub fn is_valid(&self, rule: &Rule) -> bool {
@@ -121,12 +152,12 @@ impl Tape {
                 }
             } else {
                 assert!(self[cur] < rule_max);
-                self = self.apply(rule, cur);
+                self = self.apply_in_place(rule, cur).unwrap();
                 cur = i;
             }
         }
         if cur - min - 1 == rule_len {
-            self = self.apply(rule, cur);
+            self = self.apply_in_place(rule, cur).unwrap();
         }
         assert!(cur - min < rule_len);
         self
@@ -226,6 +257,9 @@ impl Add<Tape> for Tape {
 
 #[cfg(test)]
 mod test {
+    use approx::assert_relative_eq;
+    use proptest::prelude::*;
+
     use super::*;
 
     #[test]
@@ -268,5 +302,47 @@ mod test {
         assert!(!Tape::from_arrays([1, 1, 1], [1, 1, 1]).is_standard(&rule));
         assert!(!Tape::from_arrays([1, 1, 1], [1, 1, 0]).is_standard(&rule));
         assert!(!Tape::from_arrays([1, 0, 1], [0, 1, 1]).is_standard(&rule));
+    }
+
+    #[test]
+    fn apply_rule_1() {
+        let tape = Tape::from_arrays([5], [2]);
+        let rule = Rule::from_array([2]).unwrap();
+        let index = 0;
+        let result = tape.apply(&rule, index).unwrap();
+        assert_relative_eq!(tape.value(&rule), 6.);
+        assert_relative_eq!(result.value(&rule), 6.);
+    }
+
+    proptest! {
+        #[test]
+        fn apply_rule(tape_negatives in proptest::collection::vec(0u32..=100, 0..10),
+                tape_positives in proptest::collection::vec(0u32..=100, 0..10),
+                rule_values in proptest::collection::vec(1u32..=10, 1..10),
+                index in -10isize..10) {
+            let tape = Tape::from_arrays(tape_positives, tape_negatives);
+            if let Some(rule) = Rule::from_array(rule_values) {
+                if let Ok(result) = tape.apply(&rule, index) {
+                    let tape_value = tape.value(&rule);
+                    let result_value = result.value(&rule);
+                    assert_relative_eq!(result_value, tape_value);
+                }
+            }
+        }
+
+        #[test]
+        fn standardize(max in 1u32..=20, tape_negatives in proptest::collection::vec(0u32..=20, 0..10),
+        tape_positives in proptest::collection::vec(0u32..=20, 0..10), rule_values in proptest::collection::vec(1u32..=10, 0..10)) {
+            let tape_negatives: Vec<_> = tape_negatives.iter().map(|&x| x % max).collect();
+            let tape_positives: Vec<_> = tape_positives.iter().map(|&x| x % max).collect();
+            let tape = Tape::from_arrays(tape_positives, tape_negatives);
+            let rule_values: Vec<_> = std::iter::once(max).chain(rule_values.iter().map(|&x| x % max)).collect();
+            if let Some(rule) = Rule::from_array(rule_values) {
+                let result = tape.standardize(&rule);
+                let tape_value = tape.value(&rule);
+                let result_value = result.value(&rule);
+                assert_relative_eq!(result_value, tape_value);
+            }
+        }
     }
 }

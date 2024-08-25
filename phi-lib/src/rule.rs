@@ -124,23 +124,6 @@ mod test {
 
     use super::*;
 
-    proptest! {
-        #![proptest_config(ProptestConfig {
-            timeout: 10,
-            ..ProptestConfig::default()
-        })]
-
-        #[test]
-        fn rule_from_array(values in proptest::collection::vec(0u32..=100, 1..10)) {
-            let rule = Rule::from_array(values.clone());
-            if values.is_empty() || values.iter().tuple_windows().any(|(a, b)| a < b) {
-                prop_assert!(rule.is_none());
-            } else {
-                rule.unwrap();
-            }
-        }
-    }
-
     #[test]
     fn rule_base_whole() {
         let rule = Rule::from_array([1]).unwrap();
@@ -160,5 +143,36 @@ mod test {
         let rule = Rule::from_array([1, 1, 0]).unwrap();
         let phi = (1. + 5_f64.sqrt()) / 2.;
         assert_relative_eq!(rule.base(), phi);
+    }
+
+    proptest! {
+        #![proptest_config(ProptestConfig {
+            timeout: 10,
+            ..ProptestConfig::default()
+        })]
+
+        #[test]
+        fn rule_from_array(values in proptest::collection::vec(1u32..=100, 0..10)) {
+            let rule = Rule::from_array(values.clone());
+            if values.is_empty() || values.iter().tuple_windows().any(|(a, b)| a < b) {
+                prop_assert!(rule.is_none());
+            } else {
+                rule.unwrap();
+            }
+        }
+
+        #[test]
+        fn rule_base(values in proptest::collection::vec(1u32..=100, 1..10)) {
+            let rule = Rule::from_array(values.clone());
+            if values.is_empty() || values.iter().tuple_windows().any(|(a, b)| a < b) {
+                prop_assert!(rule.is_none());
+            } else {
+                let rule = rule.unwrap();
+                let first = rule.first();
+                let base = rule.base();
+                assert!(base >= f64::from(first));
+                assert!(base < f64::from(first) + 1.);
+            }
+        }
     }
 }
